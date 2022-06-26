@@ -11,34 +11,32 @@ import ClientCard from "@components/clientCard/ClientCard";
 import { IClientRequest, IClientResponse } from "~/typings";
 import clientManagerService from "~/services/client-manager.service";
 import LoadingButton from "@mui/lab/LoadingButton";
-import { defaultClients } from "~/utils/defaultClients";
-import Skeleton from "@mui/material/Skeleton";
-import Stack from "@mui/material/Stack";
 
 const Home: NextPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [clients, setClients] = useState<IClientResponse[]>([]);
-  
+
   const onSubmit = (values: IClientRequest) => {
     setLoading(true);
-    setTimeout(()=>{  
-    var bodyFormData = new FormData();
-    bodyFormData.append("fullName", values.fullName);
-    bodyFormData.append("amount", values.amount);
-    if (values.imageUrl) bodyFormData.append("imageUrl", values.imageUrl);
+    setTimeout(() => {
+      var bodyFormData = new FormData();
+      bodyFormData.append("fullName", values.fullName);
+      bodyFormData.append("amount", values.amount);
+      if (values.imageUrl) bodyFormData.append("imageUrl", values.imageUrl);
 
-    clientManagerService
-      .createClient(bodyFormData)
-      .then(() => {
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+      clientManagerService
+        .createClient(bodyFormData)
+        .then(() => {
+          fetchClients();
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
     }, 2000);
   };
 
-  useEffect(() => {
+  const fetchClients = () => {
     clientManagerService
       .getClients()
       .then((res) => {
@@ -47,7 +45,8 @@ const Home: NextPage = () => {
       .catch(() => {
         setClients([]);
       });
-  }, [clients]);
+  };
+  useEffect(fetchClients, []);
 
   const formik = useFormik({
     initialValues: {
@@ -159,9 +158,7 @@ const Home: NextPage = () => {
           </section>
         </Grid>
         <Grid item xs={12} md={6}>
-          <section style={{paddingTop:20}}>
-
-
+          <section style={{ paddingTop: 20 }}>
             {clients.map((item, index) => {
               return <ClientCard key={index} amount={Number(item.amount).toFixed(2)} imageUrl={item.imageUrl} fullName={item.fullName} />;
             })}
